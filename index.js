@@ -15,7 +15,7 @@ const app = express();
 const oauth2Client = new google.auth.OAuth2(
   config.googleClientId,
   config.googleClientSecret,
-  'http://localhost:5000/auth/google/callback'
+  'https://auth-backend.adaptable.app/auth/google/callback'
 );
 const scopes = [
   'https://www.googleapis.com/auth/userinfo.email',
