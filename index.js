@@ -73,13 +73,14 @@ const authenticateToken = (req, res, next) => {
   jwt.verify(token, 'secret', (err, decoded) => {
     if(err) return res.status(403).json({ message: 'Failed to authenticate token'})
     req.user = decoded
+    next();
   })
 
   next();
 }
 
 app.get('/auth/google/user-info', authenticateToken, (req, res) => {
-  return res.json({ user: req.user })
+  return res.json({ user: req.user || 'None' })
 })
 
 app.get('/auth/google/callback', async (req, res) => {
@@ -113,6 +114,7 @@ app.get('/auth/google/callback', async (req, res) => {
   const expiresIn = 60 * 60 * 1;
 
   const token = jwt.sign(payload, secret, {expiresIn: expiresIn})
+  console.log(token)
   res.cookie('accessToken', token, { httpOnly: true, maxAge:3600000 })
   res.redirect(config.clientUrl)
 })
