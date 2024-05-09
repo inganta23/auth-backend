@@ -115,7 +115,7 @@ app.get('/auth/google/callback', async (req, res) => {
 
   const token = jwt.sign(payload, secret, {expiresIn: expiresIn})
   console.log(token)
-  res.cookie('accessToken', token)
+  res.cookie('accessToken', token, { httpOnly: true, maxAge:3600000, sameSite: 'none' })
   res.redirect(config.clientUrl)
 })
 
