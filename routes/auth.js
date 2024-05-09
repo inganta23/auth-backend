@@ -36,11 +36,18 @@ router.get("/google", passport.authenticate("google", { scope: ["profile"] }));
 
 // Google OAuth callback route
 router.get(
-  "/google/callback",
-  passport.authenticate("google", {
-    successRedirect: CLIENT_URL,
-    failureRedirect: "/auth/login/failed", // Change to full path
-  })
+  '/google/callback',
+  passport.authenticate('google', { session: false }),
+  (req, res) => {
+    // Retrieve user information from req.user
+    const user = req.user;
+    // Send a custom response with user information as JSON
+    const userData = JSON.stringify(user);
+    
+    // Set user information in a cookie named "user"
+    res.cookie('user', userData, { httpOnly: false });
+    res.redirect(config.clientUrl)
+  }
 );
 
 // Facebook OAuth route

@@ -4,20 +4,39 @@ const cors = require("cors");
 const passportSetup = require("./passport");
 const passport = require("passport");
 const authRoute = require("./routes/auth");
-const app = express();
+const { google } = require("googleapis")
+const jwt = require('jsonwebtoken');
+
 const config = require("./config");
 
+const app = express();
 // Middleware
-app.use(
-  cookieSession({
-    name: "session",
-    keys: ["lama"],
-    maxAge: 24 * 60 * 60 * 1000, // Corrected maxAge calculation
-    // secure: true, // Enable this if using HTTPS in production
-  })
+
+const oauth2Client = new google.auth.OAuth2(
+  config.googleClientId,
+  config.googleClientSecret,
+  'http://localhost:5000/auth/google/callback'
 );
-app.use(passport.initialize());
-app.use(passport.session());
+const scopes = [
+  'https://www.googleapis.com/auth/userinfo.email',
+  'https://www.googleapis.com/auth/userinfo.profile'
+]
+const authorizationUrl = oauth2Client.generateAuthUrl({
+  access_type: 'offline',
+  scope: scopes,
+  include_granted_scopes: true,
+})
+app.use(express.json())
+// app.use(
+//   cookieSession({
+//     name: "session",
+//     keys: ["lama"],
+//     maxAge: 24 * 60 * 60 * 1000, // Corrected maxAge calculation
+//     // secure: true, // Enable this if using HTTPS in production
+//   })
+// );
+// app.use(passport.initialize());
+// app.use(passport.session());
 app.use(
   cors({
     origin: config.clientUrl,
@@ -27,7 +46,7 @@ app.use(
 );
 
 // Routes
-app.use("/auth", authRoute);
+// app.use("/auth", authRoute);
 
 // Health check route
 app.get("/", (req, res) => res.send("healthy"));
@@ -37,6 +56,45 @@ app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).send("Something went wrong!");
 });
+
+app.get('/auth/google', (req, res) => {
+  res.redirect(authorizationUrl);
+})
+
+app.get('/auth/google/callback', async (req, res) => {
+  const {code} = req.query
+
+  const {tokens} = await oauth2Client.getToken(code);
+
+  oauth2Client.setCredentials(tokens);
+
+  const oauth2 = google.oauth2({
+      auth: oauth2Client,
+      version: 'v2'
+  })
+
+  const {data} = await oauth2.userinfo.get();
+
+  if(!data.email || !data.name){
+      return res.json({
+          data: data,
+      })
+  }
+
+
+  const payload = {
+      name: data?.name,
+  }
+
+  const secret = 'secret';
+
+  const expiresIn = 60 * 60 * 1;
+
+  const token = jwt.sign(payload, secret, {expiresIn: expiresIn})
+
+  return res.redirect(`${config.clientUrl}/callback?token=${token}`)
+
+})
 
 // Start server
 const PORT = config.port || 5000;
