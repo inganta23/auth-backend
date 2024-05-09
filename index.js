@@ -4,6 +4,7 @@ const cookieParser = require("cookie-parser");
 const jwt = require('jsonwebtoken');
 const { google } = require("googleapis");
 const config = require("./config");
+const path = require("path")
 
 const app = express();
 
@@ -30,6 +31,7 @@ app.use(cors({
   credentials: true,
 }));
 app.use(cookieParser());
+app.use(express.static(path.join(__dirname, './build')));
 
 // Routes
 app.get("/", (req, res) => res.send("healthy"));
