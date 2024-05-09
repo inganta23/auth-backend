@@ -80,8 +80,8 @@ app.get('/auth/google/callback', async (req, res) => {
 
     res.cookie("accessToken", token, {
       httpOnly: true,
-      secure: false,
-      sameSite: "lax",
+      // secure: false,
+      // sameSite: "lax",
       maxAge: 3600000,
     });
 
