@@ -6,6 +6,7 @@ const passport = require("passport");
 const authRoute = require("./routes/auth");
 const { google } = require("googleapis")
 const jwt = require('jsonwebtoken');
+const cookieParser = require('cookie-parser'); 
 
 const config = require("./config");
 
@@ -26,6 +27,7 @@ const authorizationUrl = oauth2Client.generateAuthUrl({
   scope: scopes,
   include_granted_scopes: true,
 })
+app.use(cookieParser());
 app.use(express.json())
 // app.use(
 //   cookieSession({
@@ -61,6 +63,25 @@ app.get('/auth/google', (req, res) => {
   res.redirect(authorizationUrl);
 })
 
+const authenticateToken = (req, res, next) => {
+  if (!req.cookies) return res.status(404).json({ message: 'No cookies sent'})
+  const token = req.cookies.accessToken
+  if(!token) return res.status(401).json*{
+    message: 'No token is provided'
+  }
+
+  jwt.verify(token, 'secret', (err, decoded) => {
+    if(err) return res.status(403).json({ message: 'Failed to authenticate token'})
+    req.user = decoded
+  })
+
+  next();
+}
+
+app.get('/auth/google/user-info', authenticateToken, (req, res) => {
+  return res.json({ user: req.user })
+})
+
 app.get('/auth/google/callback', async (req, res) => {
   const {code} = req.query
 
@@ -84,6 +105,7 @@ app.get('/auth/google/callback', async (req, res) => {
 
   const payload = {
       name: data?.name,
+      email: data?.email
   }
 
   const secret = 'secret';
@@ -91,9 +113,8 @@ app.get('/auth/google/callback', async (req, res) => {
   const expiresIn = 60 * 60 * 1;
 
   const token = jwt.sign(payload, secret, {expiresIn: expiresIn})
-
-  return res.redirect(`${config.clientUrl}/callback?token=${token}`)
-
+  res.cookie('accessToken', token, { httpOnly: true, maxAge:3600000 })
+  res.redirect(config.clientUrl)
 })
 
 // Start server
