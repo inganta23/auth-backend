@@ -10,9 +10,10 @@ router.get("/login/success", (req, res) => {
       success: true,
       message: "successfull",
       user: req.user,
-      //   cookies: req.cookies
     });
-  }
+  }else{
+    res.status(400).json({message:"Not Authorized"})
+}
 });
 
 router.get("/login/failed", (req, res) => {
