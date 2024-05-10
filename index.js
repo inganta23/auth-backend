@@ -34,8 +34,6 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, './client/dist')));
 
 // Routes
-app.get("/", (req, res) => res.send("healthy"));
-
 app.get('/auth/google', (req, res) => {
   res.redirect(authorizationUrl);
 });
