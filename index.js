@@ -31,7 +31,7 @@ app.use(cors({
   credentials: true,
 }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, './client/dist')));
+app.use(express.static(path.join(__dirname, './build')));
 
 // Routes
 app.get('/auth/google', (req, res) => {
@@ -80,8 +80,6 @@ app.get('/auth/google/callback', async (req, res) => {
 
     res.cookie("accessToken", token, {
       httpOnly: true,
-      secure: true,
-      domain: ".vercel.app",
       maxAge: 3600000,
     });
 
