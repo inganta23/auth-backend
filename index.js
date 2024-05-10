@@ -83,7 +83,7 @@ app.get('/auth/google/callback', async (req, res) => {
     res.cookie("accessToken", token, {
       httpOnly: true,
       secure: true,
-      sameSite: "none",
+      domain: ".vercel.app",
       maxAge: 3600000,
     });
 
