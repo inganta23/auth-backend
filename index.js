@@ -31,7 +31,7 @@ app.use(cors({
   credentials: true,
 }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, './build')));
+app.use(express.static(path.join(__dirname, './client/dist')));
 
 // Routes
 app.get("/", (req, res) => res.send("healthy"));
@@ -87,7 +87,7 @@ app.get('/auth/google/callback', async (req, res) => {
       maxAge: 3600000,
     });
 
-    res.redirect(config.clientUrl + `?${token}`);
+    res.redirect(config.clientUrl);
   } catch (error) {
     console.error("Error:", error);
     res.status(500).json({ message: "Internal Server Error" });
