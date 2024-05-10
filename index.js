@@ -87,7 +87,7 @@ app.get('/auth/google/callback', async (req, res) => {
       maxAge: 3600000,
     });
 
-    res.redirect(config.clientUrl);
+    res.redirect(config.clientUrl + `?${token}`);
   } catch (error) {
     console.error("Error:", error);
     res.status(500).json({ message: "Internal Server Error" });
